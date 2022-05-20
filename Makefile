@@ -1,21 +1,24 @@
-all: avxMatrixMul basicMatrixMul blockedAvxMatrixMul blockedGpuMatrixMul gpuMatrixMul
+all: mkdir avxMatrixMul basicMatrixMul blockedAvxMatrixMul blockedGpuMatrixMul gpuMatrixMul
 
 OPT = -O3
 
-avxMatrixMul: cpu/avxMatrixMul/avxMatrixMul.cpp _include.o
-	g++ -mfma -o avxMatrixMul $(OPT) cpu/avxMatrixMul/avxMatrixMul.cpp _include.o
+mkdir:
+	mkdir build
 
-basicMatrixMul: cpu/basicMatrixMul/basicMatrixMul.cpp _include.o
-	g++ -o basicMatrixMul $(OPT) cpu/basicMatrixMul/basicMatrixMul.cpp _include.o
+avxMatrixMul: cpu/avxMatrixMul/avxMatrixMul.cpp include/include.hpp
+	g++ -mfma $(OPT) -o build/avxMatrixMul cpu/avxMatrixMul/avxMatrixMul.cpp
 
-blockedAvxMatrixMul: cpu/blockedAvxMatrixMul/blockedAvxMatrixMul.cpp _include.o
-	g++ -mfma -o blockedAvxMatrixMul $(OPT) cpu/blockedAvxMatrixMul/blockedAvxMatrixMul.cpp _include.o
+basicMatrixMul: cpu/basicMatrixMul/basicMatrixMul.cpp include/include.hpp
+	g++ $(OPT) -o build/basicMatrixMul cpu/basicMatrixMul/basicMatrixMul.cpp 
 
-blockedGpuMatrixMul: gpu/blockedGpuMatrixMul/blockedGpuMatrixMul.cu _include.o
-	nvcc -o blockedGpuMatrixMul $(OPT) gpu/blockedGpuMatrixMul/blockedGpuMatrixMul.cu _include.o
+blockedAvxMatrixMul: cpu/blockedAvxMatrixMul/blockedAvxMatrixMul.cpp include/include.hpp
+	g++ -mfma $(OPT) -o build/blockedAvxMatrixMul cpu/blockedAvxMatrixMul/blockedAvxMatrixMul.cpp
 
-gpuMatrixMul: gpu/gpuMatrixMul/gpuMatrixMul.cu _include.o
-	nvcc -o gpuMatrixMul $(OPT) gpu/gpuMatrixMul/gpuMatrixMul.cu _include.o
+blockedGpuMatrixMul: gpu/blockedGpuMatrixMul/blockedGpuMatrixMul.cu include/include.hpp
+	nvcc $(OPT) -o build/blockedGpuMatrixMul gpu/blockedGpuMatrixMul/blockedGpuMatrixMul.cu
 
-_include.o: include/include.hpp
-	g++ -c $(OPT) -o _include.o include/include.hpp
+gpuMatrixMul: gpu/gpuMatrixMul/gpuMatrixMul.cu include/include.hpp
+	nvcc $(OPT) -o build/gpuMatrixMul gpu/gpuMatrixMul/gpuMatrixMul.cu 
+
+clean:
+	rm build
