@@ -1,10 +1,11 @@
 #include <iostream>
 #include <ctime>
 #include <fstream>
-#include "../../include/include.hpp"
+#include "include.hpp"
 #include <string>
 
-#define blockN 8
+#define blockN 16
+#define VERIFY
 
 using namespace std;
 
@@ -84,10 +85,6 @@ bool gemm_verify(float *A, float *B, float *C)
     auto base_c = new float[matrixSize];
     cpu_gemm_baseline(A, B, base_c);
     auto end = C + matrixSize;
-    // ofstream baseout("base");
-    // ofstream avxout("avx");
-    // printMatrix(C, N, avxout);
-    // printMatrix(base_c, N, baseout);
 
     for (float *p1 = C, *p2 = base_c; p1 != end; ++p1, ++p2)
     {
@@ -95,13 +92,6 @@ bool gemm_verify(float *A, float *B, float *C)
 
             return 0;
     }
-    /*
-        for (int i = 0; i < N; ++i)
-            for (int j = 0; j < N; ++j)
-                if (C[i * N + j] != base_c[i * N + j])
-                {
-                    cout << '(' << i << ',' << j << ')' << endl;
-                }*/
 
     return 1;
 };
@@ -128,5 +118,7 @@ int main(int argc, char **argv)
     blocked_gemm_baseline<<<gridSize, blockSize, 2 * blockN * blockN * sizeof(float)>>>(d_a, d_b, d_c, N);
     cudaMemcpy((void *)c, (void *)d_c, nBytes, cudaMemcpyDeviceToHost);
 
+#ifdef VERIFY
     cout << (gemm_verify(a, b, c) ? "true" : "false");
+#endif
 }

@@ -1,7 +1,8 @@
 #include <iostream>
 #include <ctime>
 #include <string>
-#include "../../include/include.hpp"
+#include <ctime>
+#include "include.hpp"
 
 using namespace std;
 
@@ -41,5 +42,7 @@ int main(int argc, char **argv)
     auto c = new float[matrixSize];
     randInit(a, matrixSize, 10);
     randInit(b, matrixSize, 10);
+    auto begin_t = clock();
     gemm_baseline(a, b, c);
+    cout << "time: " << 1000 * (clock() - begin_t) / (double)CLOCKS_PER_SEC << "ms" << endl;
 }

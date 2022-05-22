@@ -3,7 +3,10 @@
 #include <ctime>
 #include <fstream>
 #include <string>
-#include "../../include/include.hpp"
+#include <ctime>
+#include "include.hpp"
+
+#define VERIFY
 
 using namespace std;
 
@@ -38,10 +41,6 @@ bool gemm_verify(float *A, float *B, float *C)
     auto base_c = new float[matrixSize];
     gemm_baseline(A, B, base_c);
     auto end = C + matrixSize;
-    // ofstream baseout("base");
-    // ofstream avxout("avx");
-    // printMatrix(C, N, avxout);
-    // printMatrix(base_c, N, baseout);
 
     for (auto p1 = C, p2 = base_c; p1 != end; ++p1, ++p2)
     {
@@ -49,18 +48,8 @@ bool gemm_verify(float *A, float *B, float *C)
 
             return 0;
     }
-    /*
-for (int i = 0; i < N; ++i)
-    for (int j = 0; j < N; ++j)
-        if (C[i * N + j] != base_c[i * N + j])
-        {
-            cout << '(' << i << ',' << j << ')' << endl;
-        }
-        */
     return 1;
 }
-
-// int dbgcnt = 0;
 
 void gemm_avx(float *A, float *origin_B, float *C)
 {
@@ -78,9 +67,8 @@ void gemm_avx(float *A, float *origin_B, float *C)
             auto sum = _mm256_setzero_ps();
             auto aa = aptr;
             auto bb = bptr;
-            for (int k = 0; k < m; k += 8) // 256/32
+            for (int k = 0; k < m; k += 8)
             {
-                // cout << "get vector" << ++dbgcnt << endl;
                 auto va = _mm256_loadu_ps(aa);
                 auto vb = _mm256_loadu_ps(bb);
                 sum = _mm256_fmadd_ps(va, vb, sum);
@@ -119,6 +107,10 @@ int main(int argc, char **argv)
     auto c = new float[matrixSize];
     randInit(a, matrixSize, 10);
     randInit(b, matrixSize, 10);
+    auto begin_t = clock();
     gemm_avx(a, b, c);
-    cout << (gemm_verify(a, b, c) ? "true" : "false");
+    cout << "time: " << 1000 * (clock() - begin_t) / (double)CLOCKS_PER_SEC << "ms" << endl;
+#ifdef VERIFY
+    cout << "verify " << (gemm_verify(a, b, c) ? "true" : "false");
+#endif
 }
